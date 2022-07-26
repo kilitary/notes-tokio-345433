@@ -4,6 +4,7 @@ namespace App\Services\Ux;
 
 use App\Exceptions\ApiException;
 use App\Http\Responses\ApiResponse;
+use App\Models\Notes;
 use App\Models\Tags;
 use App\Services\AbstractApiService;
 use Illuminate\Http\JsonResponse;
@@ -134,7 +135,38 @@ class TagsService extends AbstractApiService
                 $rec = Tags::where('id', $request->id)->first();
 
                 if (null !== $rec) {
+
+                    $notes = new Notes();
+                    
+                    $notesByTag = $notes->getNotesByTag($request->id);
+                
+                    if(!empty($notesByTag))
+                    {
+                        foreach($notesByTag as $note)
+                        {
+                            $noteRecord = $notes->find($note['id']);
+                            $tagsToKeep = []; 
+
+                            if(!empty($noteRecord['tags']))
+                            {
+                                foreach($noteRecord['tags'] as $tags)
+                                {
+                                    if($request->id != $tags['id'])
+                                    {
+                                        $tagsToKeep[] = $tags['id'];
+                                    }
+                                    
+                                }
+                                
+                            }
+
+                            $noteRecord->tags()->sync($tagsToKeep);
+                        }
+                    }
+
+
                     $rec->delete();
+
                 } else {
                     throw new ApiException(JsonResponse::HTTP_FORBIDDEN, 'invalid id');
                 }
