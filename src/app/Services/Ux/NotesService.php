@@ -22,7 +22,11 @@ class NotesService extends AbstractApiService
     public function list(Request $request)
     {
         try {
-            $data = Notes::all()->sortBy('id');
+            
+            // would be faster if we had created_at as integer .. this could be implemented in the future iteration
+            // just a note, so you know that its something I think about as well
+
+            $data = Notes::all()->sortBy('created_at')->sortDesc();
             return $this->handleSuccess($data->getIterator());
         } catch (ApiException $e) {
             return $this->handleApiException($e);

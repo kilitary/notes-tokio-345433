@@ -18,6 +18,9 @@ class CreateTagsTable extends Migration
             $table->integer("tags_id");
             $table->integer("taggable_id");
             $table->string("taggable_type");
+            
+            // index 
+            $table->index(['tags_id', 'taggable_id', 'taggable_type']);
         });
 
         

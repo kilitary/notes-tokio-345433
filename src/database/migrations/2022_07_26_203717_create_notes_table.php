@@ -22,6 +22,7 @@ class CreateNotesTable extends Migration
             $table->timestamp('updated_at')->default(DB::raw('NULL ON UPDATE CURRENT_TIMESTAMP'))->nullable();
             $table->timestamp('deleted_at')->nullable();
 
+            $table->index('created_at');
         });
     }
 
