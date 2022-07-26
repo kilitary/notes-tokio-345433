@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateNotesTable extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -20,6 +21,7 @@ class CreateNotesTable extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->default(DB::raw('NULL ON UPDATE CURRENT_TIMESTAMP'))->nullable();
             $table->timestamp('deleted_at')->nullable();
+
         });
     }
 

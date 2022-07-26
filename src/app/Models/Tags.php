@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use JMS\Serializer\Annotation as Serializer;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Notes extends Model
+class Tags extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -19,7 +19,6 @@ class Notes extends Model
     protected $fillable = [
         'id',
         'name',
-        'body',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -75,20 +74,7 @@ class Notes extends Model
         return $this::__get('name');
     }
 
-    /**
-     * @Serializer\SerializedName("body")
-     * @Serializer\Type("string")
-     * @Serializer\Groups({"api", "default"})
-     * @Serializer\VirtualProperty()
-     * @Serializer\Expose()
-     * @return mixed
-     * @var string
-     */
-    public function getBody()
-    {
-        return $this::__get('body');
-    }
-
+    
     /**
      * @Serializer\SerializedName("created_at")
      * @Serializer\Type("string")
@@ -103,69 +89,9 @@ class Notes extends Model
         return $this::__get('created_at');
     }
 
-
-
-      /**
-     * @Serializer\SerializedName("tags")
-     * @Serializer\Type("array")
-     * @Serializer\Groups({"api", "default"})
-     * @Serializer\VirtualProperty
-     * @Serializer\Expose
-     *
-     * @return mixed
-     *
-     * @var string
-     */
-    public function getTags()
+    public function notes()
     {
-        $tags = $this->tags()->get()->toArray();
-        if(!empty($tags))
-        {
-            foreach($tags as $tagKey=>$tag)
-            {
-                unset($tags[$tagKey]['pivot']);
-            }
-        }
-        return $tags;
-    }
-
-     /**
-     * @Serializer\SerializedName("notes_by_tag")
-     * @Serializer\Type("array")
-     * @Serializer\Groups({"api", "default"})
-     * @Serializer\VirtualProperty
-     * @Serializer\Expose
-     *
-     * @return mixed
-     *
-     * @var string
-     */
-    public function getNotesByTag($id=null)
-    {
-        if(!$id) return [];
-        $notes = Notes::with('tags')->whereHas('tags', function($query) use ($id){
-            $query->where('id',$id);
-       })->get()->toArray();
-       
-       if(!empty($notes))
-       {
-        foreach($notes as $noteKey => $note)
-        {
-            foreach($note['tags'] as $tagKey => $tag)
-            {
-                unset($notes[$noteKey]['tags'][$tagKey]['pivot']);
-            }
-        }
-       }
-
-       return $notes;
-       
-    }
-
-    
-    public function tags()
-    {
-        return $this->morphToMany(Tags::class,'taggable');
+        return $this->morphedByMany(Notes::class, 'taggable');
     }
 
 }

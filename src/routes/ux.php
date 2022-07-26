@@ -22,8 +22,16 @@ Route::group([
     // Notes
     Route::get('/notes', 'NotesController@list');
     Route::get('/notes/{id}', 'NotesController@getone');
+    Route::get('/notes/get-by-tag/{id}', 'NotesController@getByTag');
     Route::post('/notes', 'NotesController@create');
     Route::delete('/notes/{id}', 'NotesController@delete');
     Route::put('/notes/{id}', 'NotesController@update');
+
+    // Tags
+    Route::get('/tags', 'TagsController@list');
+    Route::get('/tags/{id}', 'TagsController@getone');
+    Route::post('/tags', 'TagsController@create');
+    Route::delete('/tags/{id}', 'TagsController@delete');
+    Route::put('/tags/{id}', 'TagsController@update');
 
 });

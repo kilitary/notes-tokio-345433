@@ -16,6 +16,12 @@ class DatabaseSeeder extends Seeder
     {
         // \App\Models\User::factory(10)->create();
 
+        DB::table('tags')->insert([
+            'name' => "tag 1",
+            'created_at' => date("Y-m-d H:i:s"),
+            'updated_at' => date("Y-m-d H:i:s")
+        ]) ;
+
         DB::table('notes')->insert([
             'name' => "test",
             'body' => "hello",

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Ux\v1;
 
 use App\Http\Controllers\BaseApiController;
 use App\Http\Responses\ApiResponse;
-use App\Services\Ux\NotesService;
+use App\Services\Ux\TagsService;
 use Dropelikeit\LaravelJmsSerializer\ResponseFactory;
 //use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -12,7 +12,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class NotesController extends UxController
+class TagsController extends UxController
 {
     use DispatchesJobs, ValidatesRequests;
 
@@ -25,16 +25,16 @@ class NotesController extends UxController
     /**
      * List
      * @param Request $request
-     * @param NotesService $notesService
+     * @param TagsService $tagsService
      * @return JsonResponse
      */
-    public function list(Request $request, NotesService $notesService)
+    public function list(Request $request, TagsService $tagsService)
     { 
         try {
             /**
              * @var ApiResponse $response
              */
-            $response = $notesService->list($request);
+            $response = $tagsService->list($request);
             return $this->render($response,  ['api']);
         } catch (\Exception $e) {
             return $this->handleException($e);
@@ -44,46 +44,29 @@ class NotesController extends UxController
     /**
      * get by id
      * @param Request $request
-     * @param NotesService $notesService
+     * @param TagsService $tagsService
      * @return JsonResponse
      */
-    public function getone(Request $request, NotesService $notesService)
+    public function getone(Request $request, TagsService $tagsService)
     {
         try {
-            $response = $notesService->getone($request);
+            $response = $tagsService->getone($request);
             return $this->render($response, ['api']);
         } catch (\Exception $e) {
             return $this->handleException($e);
         }
     }
-
-    /**
-     * get by tag ids
-     * @param Request $request
-     * @param NotesService $notesService
-     * @return JsonResponse
-     */
-    public function getByTag(Request $request, NotesService $notesService)
-    {
-        try {
-            $response = $notesService->getByTag($request);
-            return $this->render($response, ['api']);
-        } catch (\Exception $e) {
-            return $this->handleException($e);
-        }
-    }
-
 
     /**
      * Create new 
      * @param Request $request
-     * @param NotesService $notesService
+     * @param TagsService $tagsService
      * @return JsonResponse
      */
-    public function create(Request $request, NotesService $notesService)
+    public function create(Request $request, TagsService $tagsService)
     {
         try {
-            $response = $notesService->create($request);
+            $response = $tagsService->create($request);
             return $this->render($response, ['api']);
         } catch (\Exception $e) {
             return $this->handleException($e);
@@ -93,13 +76,13 @@ class NotesController extends UxController
     /**
      * Update by id
      * @param Request $request
-     * @param NotesService $notesService
+     * @param TagsService $tagsService
      * @return JsonResponse
      */
-    public function update(Request $request, NotesService $notesService)
+    public function update(Request $request, TagsService $tagsService)
     {
         try {
-            $response = $notesService->update($request);
+            $response = $tagsService->update($request);
             return $this->render($response, ['api']);
         } catch (\Exception $e) {
             return $this->handleException($e);
@@ -109,13 +92,13 @@ class NotesController extends UxController
     /**
      * Delete by id
      * @param Request $request
-     * @param NotesService $notesService
+     * @param TagsService $tagsService
      * @return JsonResponse
      */
-    public function delete(Request $request, NotesService $notesService)
+    public function delete(Request $request, TagsService $tagsService)
     {
         try {
-            $response = $notesService->delete($request);
+            $response = $tagsService->delete($request);
             return $this->render($response,  ['api']);
         } catch (\Exception $e) {
             return $this->handleException($e);
