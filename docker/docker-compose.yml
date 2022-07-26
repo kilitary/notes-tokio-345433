@@ -1,0 +1,60 @@
+version: '3.5'
+
+services:
+  tokio.app:
+    build:
+      context: .
+      dockerfile: app/tokio.DockerFile
+      args:
+          BASH_PROMPT: "\\u@docker.tokio.app:\\w$$ "
+    image: tokio.app
+    container_name: tokio.app
+    command: /entrypoint.sh
+    hostname: tokio.local
+    ports:
+      - 8005:80
+    depends_on:
+      - tokio.mysql
+    links:
+      - tokio.mysql
+    environment:
+      STAGING: 1
+    working_dir: /var/www/vhosts/tokio
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ${APP_PATH}:/var/www/vhosts/tokio:cached
+      - ./app/files/nginx/tokio.conf:/etc/nginx/conf.d/tokio.conf
+    cap_add:
+      - SYS_ADMIN
+    networks:
+      - tokio.app.network
+  tokio.mysql:
+    image: mysql:5.7.37
+    platform: linux/amd64
+    container_name: tokio.mysql
+    command: --sql_mode="NO_ENGINE_SUBSTITUTION" --default-authentication-plugin=mysql_native_password
+    restart: always
+    hostname: dbhost
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${MYSQL_PORT}:3306
+    volumes:
+      - ${DB_MYSQL_PATH}:/var/lib/mysql
+    networks:
+      - tokio.app.network
+
+
+#persistant data volumes
+volumes:
+  tokio.mysql:
+
+networks:
+  tokio.app.network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.7.0/24

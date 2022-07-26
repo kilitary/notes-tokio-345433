@@ -1,0 +1,250 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+
+    <script src="https://unpkg.com/axios@0.24.0/dist/axios.min.js"></script>
+
+    <script type="text/babel">
+
+
+        // form component 
+            class Form extends React.Component {
+                constructor() {
+                    super();
+
+
+                    this.formSubmit = this.formSubmit.bind(this);
+                    this.updateFields = this.updateFields.bind(this);
+                }
+
+                updateFields(event)
+                {
+                    console.log(event)
+                    
+                    const forms = document.getElementById("forms")
+                    forms.elements["id"].value = event.id
+                    forms.elements["name"].value = event.name
+                    forms.elements["body"].value = event.body
+
+                }
+
+                formSubmit(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    
+                    const id = form.elements["id"].value;
+                    const name = form.elements["name"].value;
+                    const body = form.elements["body"].value;
+                    
+                    this.props.addNote(id, name, body);
+                    form.reset();
+                }
+
+                render() {
+                    return (
+                    <form id="forms" onSubmit={this.formSubmit}>
+                        <input id="id" type="hidden" defaultValue="" placeholder="id" />
+                        <input id="name" type="text" defaultValue="" placeholder="Name" />
+                        <input id="body" type="text" defaultValue="" placeholder="Body" />
+                        <input type="submit" value="Save" />
+                    </form>
+                    );
+                }
+            }
+
+
+            // main App component
+            class App extends React.Component {
+                constructor(props) {
+                    super(props);
+
+                    this.state = {
+                    notes: []
+                    };
+
+
+                this.addNote = this.addNote.bind(this);
+                this.deleteNote = this.deleteNote.bind(this);
+                this.editNote = this.editNote.bind(this);
+
+            }
+
+            addNote(id, name, body) {
+                
+                try {
+                    
+                    let method = 'post';
+                    let id_edit = '';
+
+                    if (parseInt(id)>0)
+                    {
+                        method = 'put'
+                        id_edit = '/'+id;
+                    }
+
+
+                        axios({
+                        method: `${method}`,
+                        url: 'http://localhost:8005/ux/notes'+`${id_edit}`,
+                        data:{ name: name, body: body },
+                        headers: {
+                                'x-app-version': '1.0',
+                                'Content-Type': 'application/json' 
+                        }
+                        
+                        })
+                        .then((response) => {
+                            let data = response.data.data
+                            
+                            let new_id = id_edit.substring(1);
+                            if(new_id>0) 
+                            {
+                                // update existing, if exists..
+                                const newState = this.state.notes.map(obj => {
+                                    if (obj.id === parseInt(new_id)) {
+                                    return {...obj, name: data.name, body: data.body};
+                                    }
+                                    return obj;
+                                });
+
+                                this.setState(prevState => ({
+                                    notes: [...newState]
+                                }));
+                            }
+                            else 
+                            {
+                                // new record
+                                this.setState(prevState => ({
+                                    notes: [...prevState.notes, { id: data.id, name: data.name, body: data.body, created_at: data.created_at }]
+                                }));
+
+                            }
+
+
+                        })
+
+                        .catch(function (response) {
+                            //handle error
+                            console.log(response)
+                        });
+                    } catch(error) {
+                        console.log(error)
+                    }
+
+            }
+
+            componentDidMount() {
+                this.getNotes();
+            }
+
+            getNotes() {
+                try {
+                    const url = 'http://localhost:8005/ux/notes'
+                    axios.get(url,{headers:{'x-app-version':'1.0'}}).then(response => response.data)
+                    .then((data) => {
+                    this.setState({ notes: data.data })
+                })
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+
+
+
+            editNote(id) {
+                return () => {
+                    try {
+                        const url = 'http://localhost:8005/ux/notes/'
+                        axios.get(url+`${id}`,{headers:{'x-app-version':'1.0'}}).then(response => response.data)
+                        .then((response) => {
+                            let data = response.data
+                            this.refs.formComp.updateFields(data)
+                        })
+                    } catch (error) {
+                        console.log(error)
+                    }
+
+                };
+            }
+
+            deleteNote(id) {
+                return () => {
+                    try {
+                        const url = 'http://localhost:8005/ux/notes/'
+                        axios.delete(url+`${id}`,{headers:{'x-app-version':'1.0'}}).then(response => response.data)
+                        .then((data) => {
+                            this.setState(prevState => ({
+                                notes: prevState.notes.filter(note => note.id !== id)
+                            }));
+                        })
+                    } catch (error) {
+                        console.log(error)
+                    }
+
+                };
+            }
+
+            render() {
+
+                return (
+                <React.Fragment>
+                <div className="App">
+                    Add Note:
+                    <Form addNote={this.addNote} ref="formComp" />
+
+                    Notes:
+                    <table border='1' width='100%'>
+                    <thead>
+                        <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Body</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.state.notes.map((note) => (
+                            <tr key={note.id}>
+                            <td>{note.id}</td>
+                            <td>{note.name}</td>
+                            <td>{note.body}</td>
+                            <td>{note.created_at}</td>
+                            <td>
+                                <button onClick={this.editNote(note.id)}>
+                                Edit
+                                </button>
+                                &nbsp;
+                                <button onClick={this.deleteNote(note.id)}>
+                                Delete
+                                </button>
+                            </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                    </table>
+
+                </div>
+                </React.Fragment>
+                );
+            }
+            }
+
+
+            ReactDOM.render(<App />, document.getElementById("root"));
+
+
+    </script>
+  </body>
+</html>
+
+

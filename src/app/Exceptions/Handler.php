@@ -1,0 +1,152 @@
+<?php
+
+namespace App\Exceptions;
+
+use App\Errors;
+use App\Events\ApiResponseErrorEvent;
+use Carbon\Exceptions\ParseErrorException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
+
+class Handler extends ExceptionHandler
+{
+    /**
+     * A list of the exception types that are not reported.
+     *
+     * @var array
+     */
+    protected $dontReport = [
+    ];
+
+    /**
+     * A list of the inputs that are never flashed for validation exceptions.
+     *
+     * @var array
+     */
+    protected $dontFlash = [
+        'password',
+        'password_confirmation',
+    ];
+
+    /**
+     * Register the exception handling callbacks for the application.
+     */
+    public function register()
+    {
+        $this->reportable(function (Throwable $e) {
+        });
+    }
+
+    public function render($request, Throwable $e)
+    {
+
+
+        // this is to handle unauthorized requests
+
+        // if ($e instanceof AuthenticationException) {
+        //     $serializedData = [
+        //         ['exception' => ['message' => $e->getMessage(),
+        //             'file' => $e->getFile(),
+        //             'line' => $e->getLine(), ],
+        //         ],
+        //     ];
+        //     Log::critical('API Exception', $serializedData);
+        //     /** @var ApiException $apiException */
+        //     $apiException = new ApiException(
+        //         Response::HTTP_UNAUTHORIZED,
+        //         \sprintf(
+        //             'Unauthorized request. [Err: %s]',
+        //             Response::HTTP_UNAUTHORIZED
+        //         ),
+        //         $serializedData,
+        //         $e
+        //     );
+
+        //     $event = event(new ApiResponseErrorEvent($apiException));
+
+        //     return response()->json($event[0]->getResponse(), Response::HTTP_UNAUTHORIZED);
+        // }
+        
+        if ($e instanceof NotFoundHttpException) {
+            $serializedData = [
+                ['exception' => ['message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(), ],
+                ],
+            ];
+            Log::critical('Route Not Found Exception', $serializedData);
+            $apiException = new ApiException(
+                Response::HTTP_NOT_FOUND,
+                \sprintf(
+                    'Route Not Found Exception. [Err: %s]',
+                    Response::HTTP_NOT_FOUND
+                ),
+                $serializedData,
+                $e
+            );
+
+            $event = event(new ApiResponseErrorEvent($apiException));
+
+            return response()->json($event[0]->getResponse(), Response::HTTP_NOT_FOUND);
+        }
+
+        if ($e instanceof MethodNotAllowedHttpException) {
+            $serializedData = [
+                ['exception' => ['message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(), ],
+                ],
+            ];
+
+            $apiException = new ApiException(
+                Response::HTTP_METHOD_NOT_ALLOWED,
+                \sprintf(
+                    'Method Not Allowed. [Err: %s]',
+                    Response::HTTP_METHOD_NOT_ALLOWED
+                ),
+                $serializedData,
+                $e
+            );
+
+            Log::critical('Method Not Allowed Exception', $serializedData);
+
+            $event = event(new ApiResponseErrorEvent($apiException));
+
+            return response()->json($event[0]->getResponse(), Response::HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        if ($e instanceof \ParseError) {
+            throw new \Exception("Internal Server Error");
+        }
+
+        if ($e instanceof \Exception) {
+            $serializedData = [
+                ['exception' => ['message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(), ],
+                ],
+            ];
+            Log::critical('Internal Server Error', $serializedData);
+            /** @var ApiException $apiException */
+            $apiException = new ApiException(
+                Response::HTTP_INTERNAL_SERVER_ERROR,
+                \sprintf(
+                    'Internal server error. [Err: %s]',
+                    Errors::NOTES_INTERNAL_SERVER_ERROR
+                ),
+                $serializedData,
+                $e
+            );
+
+            $event = event(new ApiResponseErrorEvent($apiException));
+            return response()->json($event[0]->getResponse(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return parent::render($request, $e); // TODO: Change the autogenerated stub
+    }
+}
