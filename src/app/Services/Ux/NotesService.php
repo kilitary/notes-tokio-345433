@@ -26,7 +26,7 @@ class NotesService extends AbstractApiService
             // would be faster if we had created_at as integer .. this could be implemented in the future iteration
             // just a note, so you know that its something I think about as well
 
-            $data = Notes::all()->sortBy('created_at')->sortDesc();
+            $data = Notes::orderBy('created_at', 'desc')->get();
             return $this->handleSuccess($data->getIterator());
         } catch (ApiException $e) {
             return $this->handleApiException($e);
