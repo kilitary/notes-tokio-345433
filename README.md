@@ -4,10 +4,10 @@ notes app
 postman collection is added in the project as well. 
 
 `description:`<br /><br />
-used eloquent orm
-jms serializer 
-getters/setters 
-versioning (passed via header)
+used eloquent orm<br />
+jms serializer <br />
+getters/setters <br />
+versioning (passed via header)<br /><br />
 
 
 `initial:`<br /><br />
