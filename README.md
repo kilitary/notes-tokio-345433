@@ -1,5 +1,15 @@
 notes app
 
+
+postman collection is added in the project as well. 
+
+`description:`<br /><br />
+used eloquent orm
+jms serializer 
+getters/setters 
+versioning (passed via header)
+
+
 `initial:`<br /><br />
 mkdir -p ~/projects/tokio/db<br />
 cd ~/projects/tokio/<br />
